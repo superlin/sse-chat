@@ -1,0 +1,34 @@
+<script>
+window.onload = function() {
+    // 注意UI的细节
+    var nick = prompt("Enter your nickname");     // 获取用户昵称
+    var input = document.getElementById("input"); // 获取input
+    input.focus();                                // 设置键盘焦点
+
+    // 通过EventSource注册新消息通知
+    var chat = new EventSource("/chat");
+    chat.onmessage = function(event) {            // 当获取一条消息时
+        var msg = event.data;                     // 从事件对象中获取文本数据
+        var node = document.createTextNode(msg);  // 将消息放入文本节点
+        var div = document.createElement("div");  // 创建<div>
+        div.appendChild(node);                    // 文本节点加入div
+        document.body.insertBefore(div, input);   // input之前加入div
+        input.scrollIntoView();                   // input元素进入视口
+    };
+
+    // 使用XMLHttpRequest将用户消息发送到服务器
+    input.onchange = function() {                 // 当用户完成输入
+        var msg = nick + ": " + input.value;      // 组合用户名和用户输入
+        var xhr = new XMLHttpRequest();           // 创建新的XHR
+        xhr.open("POST", "/chat");                // 发送到/chat.
+        xhr.setRequestHeader("Content-Type",      // 指明为普通的UTF-8文本 
+                             "text/plain;charset=UTF-8");
+        xhr.send(msg);                            // 发送消息
+        input.value = "";                         // 准备下次输入
+    };
+};
+</script>
+<body>
+<!-- 聊天UI只是简单的文本域 -->
+<!-- 新的消息插入input之前 -->
+<input id="input" style="width:100%"/>
